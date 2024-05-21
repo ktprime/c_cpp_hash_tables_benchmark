@@ -683,9 +683,9 @@ public:
         auto* opairs = rhs._pairs;
 
         if (is_copy_trivially())
-            memcpy(_pairs, opairs, AllocSize(_num_buckets));
+            memcpy((char*)_pairs, opairs, AllocSize(_num_buckets));
         else {
-            memcpy(_pairs + _num_buckets, opairs + _num_buckets, EPACK_SIZE * sizeof(PairT) + (_num_buckets + 7) / 8 + BIT_PACK);
+            memcpy((char*)(_pairs + _num_buckets), opairs + _num_buckets, EPACK_SIZE * sizeof(PairT) + (_num_buckets + 7) / 8 + BIT_PACK);
             for (auto it = rhs.cbegin(); it.bucket() < _num_buckets; ++it) {
                 const auto bucket = it.bucket();
                 new(_pairs + bucket) PairT(opairs[bucket]); EMH_BUCKET(_pairs, bucket) = EMH_BUCKET(opairs, bucket);
@@ -1369,8 +1369,8 @@ public:
 
         // no need alloc large bucket for small key sizeof(KeyT) < sizeof(int).
         // set small a max_load_factor, insert/reserve() will fail and introduce rehash issiue TODO: dothing ?
-        if (sizeof(KeyT) < sizeof(size_type) && buckets > (1ul << (sizeof(uint16_t) * 8)))
-            buckets = 2ul << (sizeof(KeyT) * 8);
+        //if (sizeof(KeyT) < sizeof(size_type) && buckets > (1ul << (sizeof(uint16_t) * 8)))
+        //    buckets = 2ul << (sizeof(KeyT) * 8);
 
         assert(buckets < max_size() && buckets > _num_filled);
         //TODO: throwOverflowError
@@ -1690,11 +1690,11 @@ private:
         if (EMH_LIKELY(bmask != 0))
             return bucket_from + CTZ(bmask);
 #else
-        const auto boset  = main_bucket % 8;
-        auto* const align = (uint8_t*)_bitmask + main_bucket / 8; (void)bucket_from;
+        const auto boset  = bucket_from % 8;
+        auto* const align = (uint8_t*)_bitmask + bucket_from / 8; (void)bucket_from;
         const size_t bmask  = (*(size_t*)(align) >> boset);// & 0xF0F0F0F0FF0FF0FFull;//
         if (EMH_LIKELY(bmask != 0))
-            return main_bucket + CTZ(bmask);
+            return bucket_from + CTZ(bmask);
 #endif
 
         const auto qmask = _mask / SIZE_BIT;
@@ -1829,7 +1829,7 @@ private:
         return h;
 #elif _WIN64 && EMH_INT_HASH == 1
         uint64_t high;
-        return _umul128(key, KC, &high) + high;
+        return _umul128(key, KC, &high) ^ high;
 #elif EMH_INT_HASH == 3
         auto ror  = (key >> 32) | (key << 32);
         auto low  = key * 0xA24BAED4963EE407ull;

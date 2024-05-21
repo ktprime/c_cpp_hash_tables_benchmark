@@ -2,10 +2,9 @@
 // Copyright (c) 2024 Jackson L. Allan.
 // Distributed under the MIT License (see the accompanying LICENSE file).
 
-#include "hash_table7.hpp"
-#include "hash_table5.hpp"
+#include "emilib2s.hpp"
 
-template< typename blueprint > struct emhash
+template< typename blueprint > struct emilib2S
 {
   struct hash
   {
@@ -25,7 +24,7 @@ template< typename blueprint > struct emhash
     }
   };
 
-  using table_type = emhash7::HashMap<
+  using table_type = emilib3::HashMap<
     typename blueprint::key_type,
     typename blueprint::value_type,
     hash,
@@ -85,9 +84,9 @@ template< typename blueprint > struct emhash
   }
 };
 
-template<> struct emhash< void >
+template<> struct emilib2S< void >
 {
-  static constexpr const char *label = "emhash7";
-  static constexpr const char *color = "rgb( 221, 199, 78 )";
-  static constexpr bool tombstone_like_mechanism = false;
+  static constexpr const char *label = "emilib2s";
+  static constexpr const char *color = "rgb( 11, 19, 178 )";
+  static constexpr bool tombstone_like_mechanism = true;
 };
